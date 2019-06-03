@@ -9,10 +9,6 @@ def getAllMoves(board, hand):
     allowed = getValidLetters(board, hand)
     print("Allowed", time.time()-start)
     lefts = getLefts(board, anchors, allowed, hand)
-    # print(lefts)
-    for l in lefts:
-        print(l)
-    
     
     print("Lefts", time.time()-start)
     moves = makeBlankBoard(len(board))
@@ -71,21 +67,21 @@ def getRowMoves(row, rowLefts, rowAllowed, rowAnchors, hand):
 
     return moves
 
+## Generates moves by adding letters to the right of a tile
 def extendRight(leftPart, currentIndex, rowAllowed, row, firstRun=False):
     allWords = []
     trimmedAllowed = [list(x) for x in rowAllowed]
-    # print(leftPart)
 
     if not(isinstance(leftPart, list)) or len(leftPart) < 2:
         return allWords
 
     left = leftPart[0]
 
+    # Removes letters that have already been used from the allowed letters
     if leftPart[1]:
         for sublist in trimmedAllowed:
             for letter in list(left):
                 safeRemove(letter, sublist)
-        # print(trimmedAllowed)
     
     # If you're at an endpoint, check your previous, unless this 
     if (not firstRun) and isEndPoint(currentIndex, row, rowAllowed) and isWord(left):
