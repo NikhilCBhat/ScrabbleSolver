@@ -1,6 +1,6 @@
 import itertools
 
-with open("shortwords.txt") as file: 
+with open("scrabble.txt") as file: 
    file_words = file.readlines() 
    file_words = set([x[0:-1] for x in file_words])
 
