@@ -1,5 +1,6 @@
 import time
 from wordUtils import safeRemove, isWord, getPermutations, makeBlankBoard, isEndPoint, isAnchor, isValidPlacement
+from wordClasses import move
 
 ## Gets all posibble moves on the board
 def getAllMoves(board, hand):
@@ -61,7 +62,7 @@ def getRowMoves(row, rowLefts, rowAllowed, rowAnchors, hand):
     # Iterate over the row, looking for moves
     for i in range(len(row)):
         if rowAnchors[i] == '&':
-            moves[i].extend(extendRight(["", False], i, rowAllowed.copy(), row))
+            moves[i].extend(extendRight(move("",""), i, rowAllowed.copy(), row))
             for leftPart in rowLefts[i]:
                 moves[i].extend(extendRight(leftPart, i, rowAllowed.copy(), row, firstRun=True))
 
@@ -72,15 +73,12 @@ def extendRight(leftPart, currentIndex, rowAllowed, row, firstRun=False):
     allWords = []
     trimmedAllowed = [list(x) for x in rowAllowed]
 
-    if not(isinstance(leftPart, list)) or len(leftPart) < 2:
-        return allWords
-
-    left = leftPart[0]
+    left = leftPart.word
 
     # Removes letters that have already been used from the allowed letters
-    if leftPart[1]:
+    if leftPart.fromHand is not None:
         for sublist in trimmedAllowed:
-            for letter in list(left):
+            for letter in list(leftPart.fromHand):
                 safeRemove(letter, sublist)
     
     # If you're at an endpoint, check your previous, unless this 
@@ -93,21 +91,24 @@ def extendRight(leftPart, currentIndex, rowAllowed, row, firstRun=False):
     
     # If there's a letter, add it and keep going
     elif row[currentIndex] != '-':
-        leftPart[0] = left+row[currentIndex]
+        leftPart.word = left+row[currentIndex]
         allWords.extend(extendRight(leftPart, currentIndex+1, rowAllowed, row))
     
     # If there are allowed letters, add each one
     elif len(trimmedAllowed[currentIndex]):
         for letter in trimmedAllowed[currentIndex]:
-            leftPart[0] = left+letter
-            leftPart[1] = True
+            leftPart.word = left+letter
+            leftPart.fromHand = leftPart.fromHand+letter if leftPart.fromHand is not None else letter
             allWords.extend(extendRight(leftPart, currentIndex+1, rowAllowed, row))
 
     return allWords if allWords is not [] else None
 
 ## Gets all the left parts for every anchor in a row
 def getLeftRow(row, rowAnchors, rowAllowed, hand):
-    lefts = [['-', False]]*len(row)
+    lefts = []
+    for _ in row:
+        lefts.append([])
+
     for i in range(1, len(row)):
         if rowAnchors[i] == '&':
             if (row[i-1] != '-') and (rowAnchors[i-1] != '&'):
@@ -117,11 +118,10 @@ def getLeftRow(row, rowAnchors, rowAllowed, hand):
                         break
                     prev = row[j] + prev
 
-                lefts[i] = [[prev,False]]
+                lefts[i] = [move(prev)]
             else:
                 leftsFromHand = getLeftFromHand(row, i, rowAnchors, rowAllowed, hand)
-                leftsFromHand = [[x, True] for x in leftsFromHand]
-                lefts[i] = leftsFromHand
+                lefts[i] = [move(x,x) for x in leftsFromHand]
     return lefts
 
 ## Gets all the left parts using the letters in your hand
@@ -138,4 +138,4 @@ def getLeftFromHand(row, anchorPoint, anchors, allowed, hand):
                     combosToJoin = [''.join(x) for x in combos[wordLen]]
                     allowedLetters.extend(combosToJoin)
         wordLen += 1
-    return allowedLetters if allowedLetters != [] else ['-']
+    return allowedLetters
