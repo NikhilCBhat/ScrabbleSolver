@@ -115,7 +115,7 @@ def getLeftRow(row, rowAnchors, rowAllowed, hand):
             else:
                 leftsFromHand = getLeftFromHand(row, i, rowAnchors, rowAllowed, hand)
                 lefts[i] = [move(x,x) for x in leftsFromHand]
-        lefts[i].append(move(""))
+                lefts[i].append(move(""))
     return lefts
 
 ## Gets all the left parts using the letters in your hand
