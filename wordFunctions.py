@@ -62,7 +62,7 @@ def getRowMoves(row, rowLefts, rowAllowed, rowAnchors, hand):
     # Iterate over the row, looking for moves
     for i in range(len(row)):
         if rowAnchors[i] == '&':
-            moves[i].extend(extendRight(move("",""), i, rowAllowed.copy(), row))
+            moves[i].extend(extendRight(move(""), i, rowAllowed.copy(), row))
             for leftPart in rowLefts[i]:
                 moves[i].extend(extendRight(leftPart, i, rowAllowed.copy(), row, firstRun=True))
 
@@ -74,11 +74,12 @@ def extendRight(leftPart, currentIndex, rowAllowed, row, firstRun=False):
     trimmedAllowed = [list(x) for x in rowAllowed]
 
     left = leftPart.word
+    fromHand = leftPart.fromHand
 
     # Removes letters that have already been used from the allowed letters
-    if leftPart.fromHand is not None:
+    if fromHand is not None:
         for sublist in trimmedAllowed:
-            for letter in list(leftPart.fromHand):
+            for letter in list(fromHand):
                 safeRemove(letter, sublist)
     
     # If you're at an endpoint, check your previous, unless this 
@@ -98,7 +99,7 @@ def extendRight(leftPart, currentIndex, rowAllowed, row, firstRun=False):
     elif len(trimmedAllowed[currentIndex]):
         for letter in trimmedAllowed[currentIndex]:
             leftPart.word = left+letter
-            leftPart.fromHand = leftPart.fromHand+letter if leftPart.fromHand is not None else letter
+            leftPart.fromHand = fromHand+letter if fromHand is not None else letter
             allWords.extend(extendRight(leftPart, currentIndex+1, rowAllowed, row))
 
     return allWords if allWords is not [] else None
