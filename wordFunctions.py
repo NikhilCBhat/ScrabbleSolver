@@ -4,21 +4,26 @@ from wordClasses import move
 
 ## Gets all posibble moves on the board
 def getAllMoves(board, hand):
+    # start = time.time()
     anchors = getAnchors(board)
+    # print(time.time()-start)
     allowed = getValidLetters(board, hand)
+    # print(time.time()-start)
     lefts = getLefts(board, anchors, allowed, hand)
-    
+    # print(time.time()-start)
     moves = makeBlankBoard(len(board))
-    for i in range(len(board)):
-        moves[i] = getRowMoves(board[i], lefts[i], allowed[i], anchors[i], hand)
+    # print(time.time()-start)
+    for i,row in enumerate(board):
+        moves[i] = getRowMoves(row, lefts[i], allowed[i], anchors[i], hand)
+        # print(time.time()-start)
     return moves
 
 ## Gets all of the anchors on the board
 ## List-of [List-of Strings] -> List-of Strings
 def getAnchors(board):
     anchors = makeBlankBoard(len(board))
-    for row_num in range(len(board)):
-        for column_num in range(len(board[row_num])):
+    for row_num, row in enumerate(board):
+        for column_num, _ in enumerate(row):
             if board[row_num][column_num] == '-':
                 if isAnchor(board, row_num, column_num):
                     anchors[row_num][column_num] = "&"
@@ -29,8 +34,8 @@ def getAnchors(board):
 def getValidLetters(board, hand):
     allAllowed = makeBlankBoard(len(board))
 
-    for row_num in range(len(board)):
-        for column_num in range(len(board[row_num])):
+    for row_num, row in enumerate(board):
+        for column_num, _ in enumerate(row):
             if board[row_num][column_num] == '-':
                 allAllowed[row_num][column_num] = ""
                 for letter in hand:
@@ -41,8 +46,8 @@ def getValidLetters(board, hand):
 ## Returns all possible left parts for every anchor on the board
 def getLefts(board, anchors, allowed, hand):
     lefts = ['']*len(board)
-    for i in range(len(board)):
-        lefts[i] = getLeftRow(board[i], anchors[i], allowed[i], hand)
+    for i,row in enumerate(board):
+        lefts[i] = getLeftRow(row, anchors[i], allowed[i], hand)
     return lefts
 
 ## Get the possible moves for a row
@@ -53,7 +58,7 @@ def getRowMoves(row, rowLefts, rowAllowed, rowAnchors, hand):
         moves.append([])
     
     # Iterate over the row, looking for moves
-    for i in range(len(row)):
+    for i,_ in enumerate(row):
         if rowAnchors[i] == '&':
             for leftPart in rowLefts[i]:
                 moves[i].extend(extendRight(leftPart, i, rowAllowed.copy(), row, firstRun=True))
