@@ -19,19 +19,28 @@ MODIFIERS =    [['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW',
                 ['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW', '~', '~', '~']]
 
 class Move(object):
-    def __init__(self, word=None, fromHand=None):
-        self.word = word
-        self.fromHand = fromHand
+    def __init__(self, letters=None, board=None):
+        self.letters = letters
+        self.board = board
+        self.score = self.getScore()
+   
+    def getScore(self, score=0):
+         
+        for tile in self.letters:
+            for bTile in self.board.getVertical(tile, 1):
+                score += bTile.points
+            
+            for aTile in self.board.getVertical(tile, -1):
+                score += aTile.points
 
-    def __str__(self):
-        w = "None" if self.word is None else self.word
-        fh = "None" if self.fromHand is None else self.fromHand
-        return "%s / %s"%(w, fh)
-
-    def __repr__(self):
-        w = "None" if self.word is None else self.word
-        fh = "None" if self.fromHand is None else self.fromHand
-        return "MoveObject: %s/%s"%(w, fh)
+            self.board.board[tile.posn.x][tile.posn.y] = tile
+        
+        score += tile.points
+        for lTile in self.board.getLeft(tile):
+            print(lTile.letter, lTile.points)
+            score += lTile.points
+ 
+        return score
 
 class Board(object):
     def __init__(self, board=None, size=None):
@@ -46,6 +55,9 @@ class Board(object):
                     p = Posn(i,j)
                     row.append(Tile(posn=p))
                 self.board.append(row)
+        else:
+            self.size = len(board)
+        self.updateAnchors()
 
     def printBoard(self):
         for row in self.board:
@@ -61,15 +73,50 @@ class Board(object):
         anchor = False
 
         if row != 0:
-            anchor = anchor or (self.board[row-1][column] != '-')   
+            anchor = anchor or not(self.board[row-1][column].isEmpty()) 
         if row != self.size - 1:
-            anchor = anchor or (self.board[row+1][column] != '-')
+            anchor = anchor or not(self.board[row+1][column].isEmpty())
         if column != 0:
-            anchor = anchor or (self.board[row][column-1] != '-')
+            anchor = anchor or not(self.board[row][column-1].isEmpty())
         if column != self.size - 1:
-            anchor = anchor or (self.board[row][column+1] != '-')
+            anchor = anchor or not(self.board[row][column+1].isEmpty())
         return anchor
+   
+    def getVertical(self, tile, direction):
+        adjacent = []
+        row_num, column_num = tile.posn.x, tile.posn.y
 
+        r = range(row_num-1, -1, -1)
+        if direction == 1:
+            r = range(row_num+1, self.size)
+        
+        for row in r:
+            tile = self.board[row][column_num]
+            if tile.isEmpty():
+                break
+            adjacent.append(tile)
+        
+        return adjacent[::direction]
+
+    def getLeft(self, tile):
+        left = []
+        row_num, column_num = tile.posn.x, tile.posn.y
+        for col in range(column_num-1, -1, -1):
+            tile = self.board[row_num][col]
+            if tile.isEmpty():
+                break
+            left.append(tile)
+        return left[::-1]
+
+    def getRight(self, tile):
+        right = []
+        row_num, column_num = tile.posn.x, tile.posn.y
+        for col in range(column_num+1, self.size):
+            tile = self.board[row_num][col]
+            if tile.isEmpty():
+                break
+            right.append(tile)
+        return right
 
 def makeBoard(letters):
     b = []
