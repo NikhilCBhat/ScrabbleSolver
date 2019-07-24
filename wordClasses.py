@@ -1,6 +1,5 @@
-pointsList = {'-': -1,
- 'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
- 'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10}
+pointsList = {'-': -1, 'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
+ 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3, 'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10}
 
 MODIFIERS =    [['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW', '~', '~', '~'],
                 ['~', '~', 'DL', '~', '~', 'DW', '~', '~', '~', 'DW', '~', '~', 'DL', '~', '~'],
@@ -18,6 +17,9 @@ MODIFIERS =    [['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW',
                 ['~', '~', 'DL', '~', '~', 'DW', '~', '~', '~', 'DW', '~', '~', 'DL', '~', '~'],
                 ['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW', '~', '~', '~']]
 
+letterMultiplier = {"DL": 2, "TL":3}
+wordMultiplier = {"TW":3, "DW":2}
+
 class Move(object):
     def __init__(self, letters=None, board=None):
         self.letters = letters
@@ -27,19 +29,17 @@ class Move(object):
     def getScore(self, score=0):
          
         for tile in self.letters:
-            for bTile in self.board.getVertical(tile, 1):
-                score += bTile.points
-            
-            for aTile in self.board.getVertical(tile, -1):
-                score += aTile.points
-
+            for direction in [-1,1]:
+                for dTile in self.board.getVertical(tile, direction):
+                    score += dTile.points
             self.board.board[tile.posn.x][tile.posn.y] = tile
-        
+            score += tile.points * (letterMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)-1)
+
         score += tile.points
         for lTile in self.board.getLeft(tile):
-            print(lTile.letter, lTile.points)
             score += lTile.points
- 
+        for lTile in self.board.getRight(tile):
+            score += lTile.points
         return score
 
 class Board(object):
