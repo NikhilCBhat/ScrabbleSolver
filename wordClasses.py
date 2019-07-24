@@ -27,19 +27,22 @@ class Move(object):
         self.score = self.getScore()
    
     def getScore(self, score=0):
+
+        finalMultiplier = 1
          
         for tile in self.letters:
             for direction in [-1,1]:
                 for dTile in self.board.getVertical(tile, direction):
                     score += dTile.points
             self.board.board[tile.posn.x][tile.posn.y] = tile
+            finalMultiplier *= wordMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)
             score += tile.points * (letterMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)-1)
 
-        score += tile.points
+        score += tile.points*finalMultiplier
         for lTile in self.board.getLeft(tile):
-            score += lTile.points
+            score += lTile.points*finalMultiplier
         for lTile in self.board.getRight(tile):
-            score += lTile.points
+            score += lTile.points*finalMultiplier
         return score
 
 class Board(object):
