@@ -44,6 +44,12 @@ class Move(object):
         for lTile in self.board.getRight(tile):
             score += lTile.points*finalMultiplier
         return score
+    
+    def __gt__(self, move2):
+        return self.score > move2.score
+    
+    def __lt__(self, move2):
+        return self.score < move2.score
 
 class Board(object):
     def __init__(self, board=None, size=None):
