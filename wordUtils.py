@@ -63,18 +63,24 @@ def isAnchor(board, row, column):
 ## Determines if a letter is allowed to be placed in a location on the board
 ## String, List-of [List-of Strings], Int, Int -> Boolean
 def isValidPlacement(letter, board, row_num, column_num):
-    above = ""
-    below = ""
+    above = getAbove(board, row_num, column_num)
+    below = getBelow(board, row_num, column_num)
+    return (above == "" and below == "") or isWord((below+letter+above).lower())
 
+## Gets the letters below a position
+def getBelow(board, row_num, column_num):
+    below = ""
     for row in range(row_num-1, -1, -1):
         if board[row][column_num] == '-':
             break
         below = board[row][column_num] + below
+    return below
 
+## Gets the letter above a position
+def getAbove(board, row_num, column_num):
+    above = ""
     for row in range(row_num+1, len(board)):
         if board[row][column_num] == '-':
             break
         above += board[row][column_num]
-    
-    allowed = (above == "" and below == "") or isWord((below+letter+above).lower())
-    return allowed
+    return above
