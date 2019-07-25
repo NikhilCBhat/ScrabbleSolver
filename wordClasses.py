@@ -1,5 +1,5 @@
-from copy import deepcopy
-from wordUtils import isWord
+import itertools
+from wordUtils import isWord, safeRemove
 
 pointsList = {'-': -1, 'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
  'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3, 'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10}
@@ -36,7 +36,10 @@ class move(object):
     def __repr__(self):
         w = "None" if self.word is None else self.word
         fh = "None" if self.fromHand is None else self.fromHand
-        return "MoveObject: %s/%s"%(w, fh)
+        return "MO: %s/%s"%(w, fh)
+
+    def __eq__(self, value):
+        return self.word == value.word and self.fromHand == value.fromHand
 
     def printMistakes(self):
         if self.fromHand is not None:
@@ -80,6 +83,8 @@ class Board(object):
         self.modifiers = MODIFIERS.copy()
         self.board = board
         self.allowed = []
+        self.lefts = []
+        self.moves = []
         self.size = size
 
         if self.board is None:
@@ -95,24 +100,30 @@ class Board(object):
         self.updateAnchors()
 
         for _ in range(self.size):
-            self.allowed.append([None]*self.size)
-        self.lefts = deepcopy(self.allowed)
-        self.moves = deepcopy(self.allowed)
+            self.allowed.append(['-']*self.size)
+            self.lefts.append(['']*self.size)
+            self.moves.append(['-']*self.size)
 
         if hand is not None:
             self.updateAllowed(hand)
+            self.updateLefts()
+            self.updateMoves()
 
+    ## Prints the letters in the board
     def printBoard(self):
         for row in self.board:
             print(row)
     
+    ## Updates "isAnchor" field of each Tile in the Board.board
     def updateAnchors(self):
         for row_num, row in enumerate(self.board):
             for column_num, _ in enumerate(row):
                 if self.board[row_num][column_num].isEmpty():
-                    self.board[row_num][column_num].isAnchor == self.isAnchor(row_num, column_num)
+                    self.board[row_num][column_num].isAnchor = self.isAnchor(row_num, column_num)
     
+    ## Fills the Board.allowed table with strings, representing allowed letters from the hand
     def updateAllowed(self, hand):
+        self.hand = hand
         for row_num, row in enumerate(self.board):
             for column_num, _ in enumerate(row):
                 if self.board[row_num][column_num].isEmpty():
@@ -122,6 +133,49 @@ class Board(object):
                         if self.isValidPlacement(tile):
                             self.allowed[row_num][column_num] += tile.letter
 
+    def updateLefts(self):
+        for i in range(self.size):
+            self.lefts[i] = self.getLeftRow(i)
+
+    ## Gets all the left parts for every anchor in a row
+    def getLeftRow(self, rowIndex):
+        lefts = []
+        row = self.board[rowIndex]
+
+        for _ in range(self.size):
+            lefts.append([])
+
+        for i in range(1, self.size):
+            if row[i].isAnchor:
+                if not(row[i-1].isEmpty()) and not(row[i-1].isAnchor):
+                    prev = row[i-1].letter
+                    for j in range(i-2, -1, -1):
+                        if row[j].isEmpty():
+                            break
+                        prev = row[j].letter + prev
+
+                    lefts[i] = [move(prev)]
+                else:
+                    leftsFromHand = self.getLeftFromHand(row, i)
+                    lefts[i] = [move(x,x) for x in leftsFromHand]
+                    lefts[i].append(move(""))
+        return lefts
+
+    ## Gets all the left parts using the letters in your hand
+    def getLeftFromHand(self, row, anchorPoint):
+        allowedLetters = []
+        combos = self.hand.getPermutations()
+        wordLen = 1
+        for i in range(anchorPoint-1, -1, -1):
+            if not(row[i].isEmpty()) or row[i].isAnchor:
+                break
+            elif (wordLen in combos) and combos[wordLen] is not None:
+                # combosToJoin = [''.join(x) for x in combos[wordLen]]
+                allowedLetters.extend([''.join(x) for x in combos[wordLen]])
+            wordLen += 1
+        return allowedLetters
+
+    ## Determines whether a location on the board is an anchor
     def isAnchor(self, row, column):
         anchor = False
 
@@ -135,6 +189,8 @@ class Board(object):
             anchor = anchor or not(self.board[row][column+1].isEmpty())
         return anchor
    
+    ## Gets adjacent tiles in the vertical direction 
+    # Direction 1 --> Down, -1 Up 
     def getVertical(self, tile, direction):
         adjacent = []
         row_num, column_num = tile.posn.x, tile.posn.y
@@ -151,6 +207,7 @@ class Board(object):
         
         return adjacent[::direction]
 
+    ## Gets adjacent tiles to the lef.`t of the current one
     def getLeft(self, tile):
         left = []
         row_num, column_num = tile.posn.x, tile.posn.y
@@ -161,6 +218,7 @@ class Board(object):
             left.append(tile)
         return left[::-1]
 
+    ## Gets adjacent tiles to the right of the current one
     def getRight(self, tile):
         right = []
         row_num, column_num = tile.posn.x, tile.posn.y
@@ -171,10 +229,72 @@ class Board(object):
             right.append(tile)
         return right
 
+    ## Determines if a tile forms a word in the vertical direction
     def isValidPlacement(self, tile):
         above = getLetters(self.getVertical(tile, -1))
         below = getLetters(self.getVertical(tile, 1))
         return (above == "" and below == "") or isWord((below+tile.letter+above).lower())
+
+    ## Updates the board moves with the possible moves
+    def updateMoves(self):
+        for i in range(self.size):
+            self.moves[i] = self.getRowMoves(i)
+
+    ## Get the possible moves for a row
+    def getRowMoves(self, rowIndex):
+        # Output Container
+        moves = []
+        for _ in range(self.size):
+            moves.append([])
+        
+        # Iterate over the row, looking for moves
+        for colIndex in range(self.size):
+            if self.board[rowIndex][colIndex].isAnchor:
+                for leftPart in self.lefts[rowIndex][colIndex]:
+                    moves[colIndex].extend(self.extendRight(leftPart, rowIndex, colIndex, self.allowed[rowIndex].copy(), firstRun=True))
+
+        return moves
+
+    ## Generates moves by adding letters to the right of a tile
+    def extendRight(self, leftPart, rowIndex, currentIndex, rowAllowed, firstRun=False):
+        row = self.board[rowIndex]
+        allWords = []
+        trimmedAllowed = [list(x) for x in rowAllowed]
+
+        left = leftPart.word
+        fromHand = leftPart.fromHand
+
+        # Removes letters that have already been used from the allowed letters
+        if fromHand is not None:
+            for sublist in trimmedAllowed:
+                for letter in list(fromHand):
+                    safeRemove(letter, sublist)
+        
+        # If you're at an endpoint, check your previous, unless this 
+        if (not firstRun) and self.isEndPoint(currentIndex, rowIndex, rowAllowed) and isWord(left):
+            allWords.append(left)
+        
+        # Stop when you've reached the end of the row
+        if currentIndex >= self.size:
+            return allWords if allWords is not [] else None
+        
+        # If there's a letter, add it and keep going
+        elif not(row[currentIndex].isEmpty()):
+            leftPart.word = left+row[currentIndex].letter
+            allWords.extend(self.extendRight(leftPart, rowIndex, currentIndex+1, rowAllowed))
+        
+        # If there are allowed letters, add each one
+        elif len(trimmedAllowed[currentIndex]):
+            for letter in trimmedAllowed[currentIndex]:
+                leftPart.word = left+letter
+                leftPart.fromHand = fromHand+letter if fromHand is not None else letter
+                allWords.extend(self.extendRight(leftPart, rowIndex, currentIndex+1, rowAllowed))
+
+        return allWords if allWords is not [] else None
+    
+    ## Determines whether a given index is the end of a row
+    def isEndPoint(self, index, rowInd, allowed):
+        return (index >= self.size) or self.board[rowInd][index].isEmpty() or not(len(allowed[index]))
     
 def makeBoard(letters):
     b = []
@@ -202,11 +322,20 @@ class Tile(object):
 class Hand(object):
     def __init__(self, tiles=None, letters=None):
         if letters is not None:
+            self.letters = letters
             self.tiles = []
             for l in letters:
                 self.tiles.append(Tile(letter=l))
+            self.size = len(letters)
         else:
             self.tiles = tiles
+            self.size = len(tiles)
+    
+    def getPermutations(self):
+        combosDict = dict.fromkeys(range(1,self.size+1))
+        for i in range(1,self.size+1): 
+            combosDict[i] = set(itertools.permutations(self.letters, i))
+        return combosDict
 
 class Posn(object):
     def __init__(self, x, y):
