@@ -1,3 +1,6 @@
+from copy import deepcopy
+from wordUtils import isWord
+
 pointsList = {'-': -1, 'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
  'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3, 'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10}
 
@@ -19,6 +22,27 @@ MODIFIERS =    [['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW',
 
 letterMultiplier = {"DL": 2, "TL":3}
 wordMultiplier = {"TW":3, "DW":2}
+
+class move(object):
+    def __init__(self, word=None, fromHand=None):
+        self.word = word
+        self.fromHand = fromHand
+
+    def __str__(self):
+        w = "None" if self.word is None else self.word
+        fh = "None" if self.fromHand is None else self.fromHand
+        return "%s / %s"%(w, fh)
+
+    def __repr__(self):
+        w = "None" if self.word is None else self.word
+        fh = "None" if self.fromHand is None else self.fromHand
+        return "MoveObject: %s/%s"%(w, fh)
+
+    def printMistakes(self):
+        if self.fromHand is not None:
+            for letter in set(self.fromHand):
+                if letter not in set(self.word):
+                    print(letter)
 
 class Move(object):
     def __init__(self, letters=None, board=None):
@@ -52,21 +76,31 @@ class Move(object):
         return self.score < move2.score
 
 class Board(object):
-    def __init__(self, board=None, size=None):
+    def __init__(self, board=None, size=None, hand=None):
         self.modifiers = MODIFIERS.copy()
         self.board = board
+        self.allowed = []
         self.size = size
+
         if self.board is None:
             self.board = []
             for i in range(self.size):
-                row = []
+                board_row = []
                 for j in range(self.size):
                     p = Posn(i,j)
-                    row.append(Tile(posn=p))
-                self.board.append(row)
+                    board_row.append(Tile(posn=p))
+                self.board.append(board_row)
         else:
             self.size = len(board)
         self.updateAnchors()
+
+        for _ in range(self.size):
+            self.allowed.append([None]*self.size)
+        self.lefts = deepcopy(self.allowed)
+        self.moves = deepcopy(self.allowed)
+
+        if hand is not None:
+            self.updateAllowed(hand)
 
     def printBoard(self):
         for row in self.board:
@@ -78,6 +112,16 @@ class Board(object):
                 if self.board[row_num][column_num].isEmpty():
                     self.board[row_num][column_num].isAnchor == self.isAnchor(row_num, column_num)
     
+    def updateAllowed(self, hand):
+        for row_num, row in enumerate(self.board):
+            for column_num, _ in enumerate(row):
+                if self.board[row_num][column_num].isEmpty():
+                    self.allowed[row_num][column_num] = ""
+                    for tile in hand.tiles:
+                        tile.posn = Posn(row_num, column_num)
+                        if self.isValidPlacement(tile):
+                            self.allowed[row_num][column_num] += tile.letter
+
     def isAnchor(self, row, column):
         anchor = False
 
@@ -127,6 +171,11 @@ class Board(object):
             right.append(tile)
         return right
 
+    def isValidPlacement(self, tile):
+        above = getLetters(self.getVertical(tile, -1))
+        below = getLetters(self.getVertical(tile, 1))
+        return (above == "" and below == "") or isWord((below+tile.letter+above).lower())
+    
 def makeBoard(letters):
     b = []
     for i,row in enumerate(letters):
@@ -150,6 +199,15 @@ class Tile(object):
     def __repr__(self):
         return self.letter
 
+class Hand(object):
+    def __init__(self, tiles=None, letters=None):
+        if letters is not None:
+            self.tiles = []
+            for l in letters:
+                self.tiles.append(Tile(letter=l))
+        else:
+            self.tiles = tiles
+
 class Posn(object):
     def __init__(self, x, y):
         self.x = x
@@ -157,3 +215,9 @@ class Posn(object):
     
     def __repr__(self):
         return "%d,%d"%(self.x,self.y)
+
+def getLetters(tiles):
+    letters = ""
+    for tile in tiles:
+        letters += tile.letter
+    return letters
