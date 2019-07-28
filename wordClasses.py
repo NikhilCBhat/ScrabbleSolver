@@ -24,24 +24,6 @@ MODIFIERS =    [['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW',
 letterMultiplier = {"DL": 2, "TL":3}
 wordMultiplier = {"TW":3, "DW":2}
 
-class LeftPart(object):
-    def __init__(self, word=None, fromHand=None):
-        self.word = word
-        self.fromHand = fromHand
-
-    def __str__(self):
-        w = "None" if self.word is None else self.word
-        fh = "None" if self.fromHand is None else self.fromHand
-        return "%s / %s"%(w, fh)
-
-    def __repr__(self):
-        w = "None" if self.word is None else self.word
-        fh = "None" if self.fromHand is None else self.fromHand
-        return "MO: %s/%s"%(w, fh)
-
-    def __eq__(self, value):
-        return self.word == value.word and self.fromHand == value.fromHand
-
 class Move(object):
     def __init__(self, word, tiles=None, board=None, scoreMove=False):
         self.word = word
