@@ -23,7 +23,7 @@ MODIFIERS =    [['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW',
 letterMultiplier = {"DL": 2, "TL":3}
 wordMultiplier = {"TW":3, "DW":2}
 
-class move(object):
+class LeftPart(object):
     def __init__(self, word=None, fromHand=None):
         self.word = word
         self.fromHand = fromHand
@@ -40,12 +40,6 @@ class move(object):
 
     def __eq__(self, value):
         return self.word == value.word and self.fromHand == value.fromHand
-
-    def printMistakes(self):
-        if self.fromHand is not None:
-            for letter in set(self.fromHand):
-                if letter not in set(self.word):
-                    print(letter)
 
 class Move(object):
     def __init__(self, letters=None, board=None):
@@ -154,11 +148,11 @@ class Board(object):
                             break
                         prev = row[j].letter + prev
 
-                    lefts[i] = [move(prev)]
+                    lefts[i] = [LeftPart(prev)]
                 else:
                     leftsFromHand = self.getLeftFromHand(row, i)
-                    lefts[i] = [move(x,x) for x in leftsFromHand]
-                    lefts[i].append(move(""))
+                    lefts[i] = [LeftPart(x,x) for x in leftsFromHand]
+                    lefts[i].append(LeftPart(""))
         return lefts
 
     ## Gets all the left parts using the letters in your hand
@@ -170,7 +164,6 @@ class Board(object):
             if not(row[i].isEmpty()) or row[i].isAnchor:
                 break
             elif (wordLen in combos) and combos[wordLen] is not None:
-                # combosToJoin = [''.join(x) for x in combos[wordLen]]
                 allowedLetters.extend([''.join(x) for x in combos[wordLen]])
             wordLen += 1
         return allowedLetters
