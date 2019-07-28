@@ -42,11 +42,11 @@ class LeftPart(object):
         return self.word == value.word and self.fromHand == value.fromHand
 
 class Move(object):
-    def __init__(self, letters=None, board=None):
+    def __init__(self, letters=None, board=None, scoreMove=False):
         self.letters = letters
         self.board = board
-        self.score = self.getScore()
-   
+        self.score = self.getScore() if scoreMove else 0
+
     def getScore(self, score=0):
 
         finalMultiplier = 1
@@ -169,17 +169,17 @@ class Board(object):
         return allowedLetters
 
     ## Determines whether a location on the board is an anchor
-    def isAnchor(self, row, column):
+    def isAnchor(self, rowIndex, columnIndex):
         anchor = False
 
-        if row != 0:
-            anchor = anchor or not(self.board[row-1][column].isEmpty()) 
-        if row != self.size - 1:
-            anchor = anchor or not(self.board[row+1][column].isEmpty())
-        if column != 0:
-            anchor = anchor or not(self.board[row][column-1].isEmpty())
-        if column != self.size - 1:
-            anchor = anchor or not(self.board[row][column+1].isEmpty())
+        if rowIndex != 0:
+            anchor = anchor or not(self.board[rowIndex-1][columnIndex].isEmpty()) 
+        if rowIndex != self.size - 1:
+            anchor = anchor or not(self.board[rowIndex+1][columnIndex].isEmpty())
+        if columnIndex != 0:
+            anchor = anchor or not(self.board[rowIndex][columnIndex-1].isEmpty())
+        if columnIndex != self.size - 1:
+            anchor = anchor or not(self.board[rowIndex][columnIndex+1].isEmpty())
         return anchor
    
     def printAnchors(self, save=False):
@@ -259,12 +259,13 @@ class Board(object):
         for colIndex in range(self.size):
             if self.board[rowIndex][colIndex].isAnchor:
                 for leftPart in self.lefts[rowIndex][colIndex]:
-                    moves[colIndex].extend(self.extendRight(leftPart, rowIndex, colIndex, self.allowed[rowIndex].copy(), firstRun=True))
+                    moves[colIndex].extend(self.extendRight(leftPart, rowIndex, colIndex, firstRun=True))
 
         return moves
 
     ## Generates moves by adding letters to the right of a tile
-    def extendRight(self, leftPart, rowIndex, currentIndex, rowAllowed, firstRun=False):
+    def extendRight(self, leftPart, rowIndex, currentIndex, firstRun=False):
+        rowAllowed = self.allowed[rowIndex]
         row = self.board[rowIndex]
         allWords = []
         trimmedAllowed = [list(x) for x in rowAllowed]
@@ -277,33 +278,33 @@ class Board(object):
             for sublist in trimmedAllowed:
                 for letter in list(fromHand):
                     safeRemove(letter, sublist)
-        
+
         # If you're at an endpoint, check your previous, unless this 
-        if (not firstRun) and self.isEndPoint(currentIndex, rowIndex, rowAllowed) and isWord(left):
+        if (not firstRun) and self.isEndPoint(currentIndex, rowIndex) and isWord(left):
             allWords.append(left)
-        
+
         # Stop when you've reached the end of the row
         if currentIndex >= self.size:
             return allWords if allWords is not [] else None
-        
+
         # If there's a letter, add it and keep going
         elif not(row[currentIndex].isEmpty()):
             leftPart.word = left+row[currentIndex].letter
-            allWords.extend(self.extendRight(leftPart, rowIndex, currentIndex+1, rowAllowed))
-        
+            allWords.extend(self.extendRight(leftPart, rowIndex, currentIndex+1))
+
         # If there are allowed letters, add each one
         elif len(trimmedAllowed[currentIndex]):
             for letter in trimmedAllowed[currentIndex]:
                 leftPart.word = left+letter
                 leftPart.fromHand = fromHand+letter if fromHand is not None else letter
-                allWords.extend(self.extendRight(leftPart, rowIndex, currentIndex+1, rowAllowed))
+                allWords.extend(self.extendRight(leftPart, rowIndex, currentIndex+1))
 
         return allWords if allWords is not [] else None
-    
+
     ## Determines whether a given index is the end of a row
-    def isEndPoint(self, index, rowInd, allowed):
-        return (index >= self.size) or self.board[rowInd][index].isEmpty() or not(len(allowed[index]))
-    
+    def isEndPoint(self, index, rowInd):
+        return (index >= self.size) or self.board[rowInd][index].isEmpty() or not(len(self.allowed[rowInd][index]))
+
 def makeBoard(letters):
     b = []
     for i,row in enumerate(letters):
