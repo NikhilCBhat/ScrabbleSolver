@@ -189,6 +189,21 @@ class Board(object):
             anchor = anchor or not(self.board[row][column+1].isEmpty())
         return anchor
    
+    def printAnchors(self, save=False):
+        b = []
+        for i in range(self.size):
+            row = ""
+            for j in range(self.size):
+                if self.board[i][j].isAnchor:
+                    row += "&"
+                else:
+                    row += "-"
+            print(row)
+            if save:
+                b.append(row)
+        if save:
+            return b
+
     ## Gets adjacent tiles in the vertical direction 
     # Direction 1 --> Down, -1 Up 
     def getVertical(self, tile, direction):
@@ -207,7 +222,7 @@ class Board(object):
         
         return adjacent[::direction]
 
-    ## Gets adjacent tiles to the lef.`t of the current one
+    ## Gets adjacent tiles to the left of the current one
     def getLeft(self, tile):
         left = []
         row_num, column_num = tile.posn.x, tile.posn.y
@@ -233,7 +248,7 @@ class Board(object):
     def isValidPlacement(self, tile):
         above = getLetters(self.getVertical(tile, -1))
         below = getLetters(self.getVertical(tile, 1))
-        return (above == "" and below == "") or isWord((below+tile.letter+above).lower())
+        return (above == "" and below == "") or isWord((above+tile.letter+below).lower())
 
     ## Updates the board moves with the possible moves
     def updateMoves(self):
