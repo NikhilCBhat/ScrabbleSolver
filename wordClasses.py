@@ -27,7 +27,6 @@ wordMultiplier = {"xTW":3, "xDW":2}
 class Move(object):
     def __init__(self, word, tiles=None, board=None, scoreMove=False):
         self.word = word
-        self.tiles = tiles
         self.board = board
         self.score = self.getScore() if scoreMove else 0
 
@@ -250,7 +249,7 @@ class Board(object):
                             for index, tile in enumerate(move.word):
                                 tile.posn = Posn(rn, index + cn - position)
                             break
-                    move.board = deepcopy(self)
+                    # move.board = deepcopy(self)
 
     ## Get the possible moves for a row
     def getRowMoves(self, rowIndex):
@@ -274,7 +273,8 @@ class Board(object):
         allWords = []
         trimmedAllowed = [list(x) for x in rowAllowed]
         left = getLetters(leftPart.word)
-        fromHand = getLetters(leftPart.tiles)
+        tilesFromHand = [x for x in leftPart.word if not(x.onBoard)]
+        fromHand = getLetters(tilesFromHand) if len(tilesFromHand) else None 
 
         # Removes letters that have already been used from the allowed letters
         if fromHand is not None:
@@ -301,10 +301,6 @@ class Board(object):
             for letter in trimmedAllowed[currentIndex]:
                 lp = deepcopy(leftPart)
                 lp.word.append(Tile(letter=letter))
-                if fromHand is not None:
-                    lp.tiles.append(Tile(letter=letter))
-                else:
-                    lp.tiles = [Tile(letter=letter)]
                 allWords.extend(self.extendRight(lp, rowIndex, currentIndex+1))
 
         return allWords if allWords is not [] else None
