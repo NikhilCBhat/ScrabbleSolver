@@ -73,8 +73,7 @@ class Board(object):
             for i in range(self.size):
                 board_row = []
                 for j in range(self.size):
-                    p = Posn(i,j)
-                    board_row.append(Tile(posn=p))
+                    board_row.append(Tile(posn=Posn(i,j)))
                 self.board.append(board_row)
         else:
             self.size = len(board)
@@ -131,7 +130,6 @@ class Board(object):
             if row[columnIndex].isAnchor:
                 if not(row[columnIndex-1].isEmpty()) and not(row[columnIndex-1].isAnchor):
                     prev = [row[columnIndex-1]]
-                    # prev = row[columnIndex-1].letter
                     for j in range(columnIndex-2, -1, -1):
                         if row[j].isEmpty():
                             break
@@ -260,15 +258,7 @@ class Board(object):
         allWords = []
         trimmedAllowed = [list(x) for x in rowAllowed]
         left = getLetters(leftPart.word)
-        length = len(left)
         fromHand = getLetters(leftPart.tiles)
-        if leftPart.tiles is not None:
-            for index, tile in enumerate(leftPart.tiles):
-                if tile.posn is not None:
-                    nt = deepcopy(tile)
-                    nt.posn.x = rowIndex
-                    nt.posn.y = currentIndex - (length - index -2)
-                    leftPart.tiles[index] = nt
 
         # Removes letters that have already been used from the allowed letters
         if fromHand is not None:
@@ -298,7 +288,7 @@ class Board(object):
                 if fromHand is not None:
                     lp.tiles.append(Tile(letter=letter))
                 else:
-                    lp.tiles = [Tile(letter=letter, posn=Posn(rowIndex, currentIndex))]
+                    lp.tiles = [Tile(letter=letter)]
                 allWords.extend(self.extendRight(lp, rowIndex, currentIndex+1))
 
         return allWords if allWords is not [] else None
@@ -312,8 +302,7 @@ def makeBoard(letters):
     for i,row in enumerate(letters):
         boardRow = []
         for j,char in enumerate(row):
-            p = Posn(i, j)
-            boardRow.append(Tile(p, char))
+            boardRow.append(Tile(Posn(i, j), char))
         b.append(boardRow)
     return Board(b)          
 
@@ -323,7 +312,7 @@ class Tile(object):
         self.points = pointsList[self.letter]
         self.posn = posn
         self.isAnchor = isAnchor
-    
+
     def isEmpty(self):
         return self.letter == "-"
 
@@ -331,29 +320,15 @@ class Tile(object):
         return self.letter
 
 class Hand(object):
-    def __init__(self, tiles=None, letters=None):
-        if letters is not None:
-            self.letters = letters
-            self.tiles = []
-            for l in letters:
-                self.tiles.append(Tile(letter=l))
-            self.size = len(letters)
-        else:
-            self.tiles = tiles
-            self.size = len(tiles)
+    def __init__(self, letters, tiles=[]):
+        self.tiles = tiles
+        for l in letters:
+            self.tiles.append(Tile(letter=l))
+        self.size = len(letters)
     
     def getPermutations(self):
         combosDict = dict.fromkeys(range(1,self.size+1))
         for i in range(1,self.size+1):
-            # toAppend = []
-            # for perm in itertools.permutations(self.tiles, i):
-            #     perm = list(perm)
-            #     # for ind, tile in enumerate(perm):
-            #     #     nt = deepcopy(tile)
-            #     #     nt.posn = Posn(0, -1*ind)
-            #     #     perm[ind] = nt
-            #     toAppend.append(perm)
-            # combosDict[i] = toAppend
             combosDict[i] = [list(x) for x in itertools.permutations(self.tiles, i)]
         return combosDict
 
