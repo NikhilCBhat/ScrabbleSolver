@@ -21,7 +21,7 @@ class Board(object):
         self.updateAnchors()
 
         for _ in range(self.size):
-            self.allowed.append(['-']*self.size)
+            self.allowed.append([['-']]*self.size)
             self.lefts.append(['']*self.size)
             self.moves.append(['-']*self.size)
 
@@ -48,11 +48,11 @@ class Board(object):
         for row_num, row in enumerate(self.board):
             for column_num, _ in enumerate(row):
                 if self.board[row_num][column_num].isEmpty():
-                    self.allowed[row_num][column_num] = ""
+                    self.allowed[row_num][column_num] = []
                     for tile in hand.tiles:
-                        tile.posn = Posn(row_num, column_num)
-                        if self.isValidPlacement(tile):
-                            self.allowed[row_num][column_num] += tile.letter
+                        nt = Tile(letter=tile.letter, posn=Posn(row_num, column_num))
+                        if self.isValidPlacement(nt):
+                            self.allowed[row_num][column_num].append(nt)
 
     ## Calls the getLeftRow function to update self.lefts
     def updateLefts(self):
@@ -182,7 +182,7 @@ class Board(object):
             for listOfMoves in self.moves[rowNumber]:
                 for move in listOfMoves:
                     for position, tile in enumerate(move):
-                        if tile.onBoard and tile.posn is not None:
+                        if tile.posn is not None:
                             rn, cn = tile.posn.x, tile.posn.y
                             for index, tile in enumerate(move):
                                 tile.posn = Posn(rn, index + cn - position)
@@ -206,19 +206,19 @@ class Board(object):
 
     ## Generates moves by adding letters to the right of a tile
     def extendRight(self, leftPart, rowIndex, currentIndex, firstRun=False):
-        rowAllowed = self.allowed[rowIndex]
+        rowAllowed = self.allowed[rowIndex].copy()
         row = self.board[rowIndex]
         allWords = []
-        trimmedAllowed = [list(x) for x in rowAllowed]
+        # trimmedAllowed = [list(x) for x in rowAllowed]
         left = getLetters(leftPart.word)
-        tilesFromHand = [x for x in leftPart.word if not(x.onBoard)]
-        fromHand = getLetters(tilesFromHand) if len(tilesFromHand) else None 
+        # tilesFromHand = [x for x in leftPart.word if not(x.onBoard)]
+        # fromHand = getLetters(tilesFromHand) if len(tilesFromHand) else None 
 
         # Removes letters that have already been used from the allowed letters
-        if fromHand is not None:
-            for sublist in trimmedAllowed:
-                for letter in list(fromHand):
-                    safeRemove(letter, sublist)
+        # if fromHand is not None:
+        #     for sublist in rowAllowed:
+        #         for tile in tilesFromHand:
+        #             safeRemove(tile, sublist)
 
         # If you're at an endpoint, check your previous, unless this 
         if (not firstRun) and self.isEndPoint(currentIndex, rowIndex) and isWord(left):
@@ -234,10 +234,10 @@ class Board(object):
             allWords.extend(self.extendRight(leftPart, rowIndex, currentIndex+1))
 
         # If there are allowed letters, add each one
-        elif len(trimmedAllowed[currentIndex]):
-            for letter in trimmedAllowed[currentIndex]:
+        elif len(rowAllowed[currentIndex]):
+            for tile in rowAllowed[currentIndex]:
                 lp = deepcopy(leftPart)
-                lp.word.append(Tile(letter=letter))
+                lp.word.append(tile)
                 allWords.extend(self.extendRight(lp, rowIndex, currentIndex+1))
 
         return allWords if allWords is not [] else None
