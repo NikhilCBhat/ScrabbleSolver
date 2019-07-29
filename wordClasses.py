@@ -5,26 +5,34 @@ class Move(object):
     def __init__(self, word=[]):
         self.word = word
         self.score = 0
+        self.index = 0
 
     def getScore(self, board):
 
-        scorableLetters = [x for x in self.word if not(x.onBoard)]
         finalMultiplier = 1
+        wordPoints = 0
 
-        for tile in scorableLetters:
-            for direction in [-1,1]:
-                for dTile in board.getVertical(tile, direction):
-                    self.score += dTile.points
-            if tile.posn is not None:
-                board.board[tile.posn.x][tile.posn.y] = tile
+        for tile in self.word:
+
+            tileMultiplier = 1
+
+            if not(tile.onBoard):
+                tileMultiplier = letterMultiplier.get(board.modifiers[tile.posn.x][tile.posn.y], 1)
                 finalMultiplier *= wordMultiplier.get(board.modifiers[tile.posn.x][tile.posn.y], 1)
-                self.score += tile.points * (letterMultiplier.get(board.modifiers[tile.posn.x][tile.posn.y], 1)-1)
+                for direction in [-1,1]:
+                    for dTile in board.getVertical(tile, direction):
+                        self.score += dTile.points
+            
+            wordPoints += tile.points * tileMultiplier
 
-        self.score += tile.points*finalMultiplier
-        for lTile in board.getLeft(tile):
-            self.score += lTile.points*finalMultiplier
-        for lTile in board.getRight(tile):
-            self.score += lTile.points*finalMultiplier
+        self.score += wordPoints * finalMultiplier
+        return self.score
+
+    def displayMove(self, board):
+        for tile in self.word:
+            board.board[tile.posn.x][tile.posn.y] = tile
+
+        board.printBoard()
 
     def __gt__(self, move2):
         return self.score > move2.score
@@ -34,6 +42,17 @@ class Move(object):
 
     def __repr__(self):
         return ''.join([tile.letter for tile in self.word])
+
+    def __iter__(self):
+        self.index = 0
+        return self
+
+    def __next__(self):
+        if self.index >= len(self.word):
+            raise StopIteration
+        else:
+            self.index += 1
+            return self.word[self.index-1]
 
 class Tile(object):
     def __init__(self, posn=None, letter="-", isAnchor=False, onBoard=False):
