@@ -206,19 +206,16 @@ class Board(object):
 
     ## Generates moves by adding letters to the right of a tile
     def extendRight(self, leftPart, rowIndex, currentIndex, firstRun=False):
-        rowAllowed = self.allowed[rowIndex].copy()
+        rowAllowed = deepcopy(self.allowed[rowIndex])
         row = self.board[rowIndex]
         allWords = []
-        # trimmedAllowed = [list(x) for x in rowAllowed]
         left = getLetters(leftPart.word)
-        # tilesFromHand = [x for x in leftPart.word if not(x.onBoard)]
-        # fromHand = getLetters(tilesFromHand) if len(tilesFromHand) else None 
 
         # Removes letters that have already been used from the allowed letters
-        # if fromHand is not None:
-        #     for sublist in rowAllowed:
-        #         for tile in tilesFromHand:
-        #             safeRemove(tile, sublist)
+        for tile in leftPart:
+            if not(tile.onBoard):
+                for sublist in rowAllowed:
+                    safeRemove(tile, sublist)
 
         # If you're at an endpoint, check your previous, unless this 
         if (not firstRun) and self.isEndPoint(currentIndex, rowIndex) and isWord(left):
