@@ -21,8 +21,8 @@ MODIFIERS =    [['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW',
                 ['~', '~', 'DL', '~', '~', 'DW', '~', '~', '~', 'DW', '~', '~', 'DL', '~', '~'],
                 ['~', '~', '~', 'TW', '~', '~', 'TL', '~', 'TL', '~', '~', 'TW', '~', '~', '~']]
 
-letterMultiplier = {"DL": 2, "TL":3}
-wordMultiplier = {"TW":3, "DW":2}
+letterMultiplier = {"xDL": 2, "xTL":3}
+wordMultiplier = {"xTW":3, "xDW":2}
 
 class Move(object):
     def __init__(self, word, tiles=None, board=None, scoreMove=False):
@@ -33,9 +33,12 @@ class Move(object):
 
     def getScore(self, score=0):
 
+        scorableLetters = [x for x in self.word if not(x.onBoard)]
+        print(scorableLetters)
+
         finalMultiplier = 1
 
-        for tile in self.tiles:
+        for tile in scorableLetters:
             for direction in [-1,1]:
                 for dTile in self.board.getVertical(tile, direction):
                     score += dTile.points
@@ -73,7 +76,7 @@ class Board(object):
             for i in range(self.size):
                 board_row = []
                 for j in range(self.size):
-                    board_row.append(Tile(posn=Posn(i,j)))
+                    board_row.append(Tile(posn=Posn(i,j), onBoard=True))
                 self.board.append(board_row)
         else:
             self.size = len(board)
@@ -138,7 +141,7 @@ class Board(object):
                     lefts[columnIndex] = [Move(prev)]
                 else:
                     leftsFromHand = self.getLeftFromHand(row, columnIndex)
-                    lefts[columnIndex] = [Move(deepcopy(tiles),tiles) for tiles in leftsFromHand]
+                    lefts[columnIndex] = [Move(deepcopy(t),t) for t in leftsFromHand]
                     lefts[columnIndex].append(Move([], []))
         return lefts
 
@@ -233,8 +236,17 @@ class Board(object):
 
     ## Updates the board moves with the possible moves
     def updateMoves(self):
-        for i in range(self.size):
-            self.moves[i] = self.getRowMoves(i)
+        for rowNumber in range(self.size):
+            self.moves[rowNumber] = self.getRowMoves(rowNumber)
+
+            for listOfMoves in self.moves[rowNumber]:
+                for move in listOfMoves:
+                    for position, tile in enumerate(move.word):
+                        if tile.onBoard:
+                            rn, cn = tile.posn.x, tile.posn.y
+                            for index, tile in enumerate(move.word):
+                                tile.posn = Posn(rn, index + cn - position)
+                            break
 
     ## Get the possible moves for a row
     def getRowMoves(self, rowIndex):
@@ -302,16 +314,17 @@ def makeBoard(letters):
     for i,row in enumerate(letters):
         boardRow = []
         for j,char in enumerate(row):
-            boardRow.append(Tile(Posn(i, j), char))
+            boardRow.append(Tile(Posn(i, j), char, onBoard=True))
         b.append(boardRow)
     return Board(b)          
 
 class Tile(object):
-    def __init__(self, posn=None, letter="-", isAnchor=False):
+    def __init__(self, posn=None, letter="-", isAnchor=False, onBoard=False):
         self.letter = letter
         self.points = pointsList[self.letter]
         self.posn = posn
         self.isAnchor = isAnchor
+        self.onBoard = onBoard
 
     def isEmpty(self):
         return self.letter == "-"
