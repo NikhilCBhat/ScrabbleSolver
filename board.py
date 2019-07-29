@@ -187,7 +187,6 @@ class Board(object):
                             for index, tile in enumerate(move):
                                 tile.posn = Posn(rn, index + cn - position)
                             break
-                    # move.board = deepcopy(self)
 
     ## Get the possible moves for a row
     def getRowMoves(self, rowIndex):
@@ -206,7 +205,7 @@ class Board(object):
 
     ## Generates moves by adding letters to the right of a tile
     def extendRight(self, leftPart, rowIndex, currentIndex, firstRun=False):
-        rowAllowed = deepcopy(self.allowed[rowIndex])
+        rowAllowed = [[elem for elem in sublist] for sublist in self.allowed[rowIndex]]
         row = self.board[rowIndex]
         allWords = []
         left = getLetters(leftPart.word)
@@ -249,8 +248,7 @@ def getBestMove(b):
     for row in b.moves:
         for listOfMoves in row:
             for move in listOfMoves:
-                move.score = move.getScore()
+                move.getScore(b)
                 if bestMove is None or move > bestMove:
                     bestMove = move
-
     return bestMove
