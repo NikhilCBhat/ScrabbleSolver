@@ -1,5 +1,5 @@
 import time
-from wordUtils import safeRemove, isWord, getPermutations, makeBlankBoard, isEndPoint, isAnchor, isValidPlacement
+from oldUtils import safeRemove, isWord, getPermutations, makeBlankBoard, isEndPoint, isAnchor, isValidPlacement
 
 class LeftPart(object):
     def __init__(self, word=None, fromHand=None):
