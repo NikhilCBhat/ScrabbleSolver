@@ -25,7 +25,7 @@ letterMultiplier = {"xDL": 2, "xTL":3}
 wordMultiplier = {"xTW":3, "xDW":2}
 
 class Move(object):
-    def __init__(self, word, tiles=None, board=None, scoreMove=False):
+    def __init__(self, word=[], board=None, scoreMove=False):
         self.word = word
         self.board = board
         self.score = self.getScore() if scoreMove else 0
@@ -141,8 +141,8 @@ class Board(object):
                     lefts[columnIndex] = [Move(prev)]
                 else:
                     leftsFromHand = self.getLeftFromHand(row, columnIndex)
-                    lefts[columnIndex] = [Move(deepcopy(t),t) for t in leftsFromHand]
-                    lefts[columnIndex].append(Move([], []))
+                    lefts[columnIndex] = [Move(t) for t in leftsFromHand]
+                    lefts[columnIndex].append(Move())
         return lefts
 
     ## Gets all the left parts using the letters in your hand
@@ -292,9 +292,8 @@ class Board(object):
 
         # If there's a letter, add it and keep going
         elif not(row[currentIndex].isEmpty()):
-            lp = deepcopy(leftPart)
-            lp.word.append(row[currentIndex])
-            allWords.extend(self.extendRight(lp, rowIndex, currentIndex+1))
+            leftPart.word.append(row[currentIndex])
+            allWords.extend(self.extendRight(leftPart, rowIndex, currentIndex+1))
 
         # If there are allowed letters, add each one
         elif len(trimmedAllowed[currentIndex]):
