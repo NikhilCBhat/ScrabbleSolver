@@ -1,5 +1,5 @@
 import itertools
-from wordUtils import isWord, safeRemove
+from wordUtils import isWord, safeRemove, getLetters
 from copy import deepcopy
 
 pointsList = {'-': -1, 'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
@@ -351,11 +351,3 @@ class Posn(object):
     
     def __repr__(self):
         return "%d,%d"%(self.x,self.y)
-
-def getLetters(tiles):
-    if tiles is None:
-        return None
-    letters = ""
-    for tile in tiles:
-        letters += tile.letter
-    return letters
