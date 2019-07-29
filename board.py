@@ -4,8 +4,8 @@ from wordUtils import isWord, safeRemove, getLetters, MODIFIERS
 from wordClasses import Tile, Posn, Hand, Move
 
 class Board(object):
-    def __init__(self, letters ,hand=None):
-        self.modifiers = MODIFIERS.copy()
+    def __init__(self, letters, hand=None):
+        self.modifiers = MODIFIERS
 
         self.board = []
         for i,row in enumerate(letters):
@@ -181,10 +181,10 @@ class Board(object):
 
             for listOfMoves in self.moves[rowNumber]:
                 for move in listOfMoves:
-                    for position, tile in enumerate(move.word):
+                    for position, tile in enumerate(move):
                         if tile.onBoard and tile.posn is not None:
                             rn, cn = tile.posn.x, tile.posn.y
-                            for index, tile in enumerate(move.word):
+                            for index, tile in enumerate(move):
                                 tile.posn = Posn(rn, index + cn - position)
                             break
                     # move.board = deepcopy(self)
