@@ -56,6 +56,9 @@ class Move(object):
     def __lt__(self, move2):
         return self.score < move2.score
 
+    def __repr__(self):
+        return ''.join([tile.letter for tile in self.word])
+
 class Board(object):
     def __init__(self, board=None, size=None, hand=None):
         self.modifiers = MODIFIERS.copy()
@@ -91,14 +94,14 @@ class Board(object):
     def printBoard(self):
         for row in self.board:
             print(row)
-    
+
     ## Updates "isAnchor" field of each Tile in the Board.board
     def updateAnchors(self):
         for row_num, row in enumerate(self.board):
             for column_num, _ in enumerate(row):
                 if self.board[row_num][column_num].isEmpty():
                     self.board[row_num][column_num].isAnchor = self.isAnchor(row_num, column_num)
-    
+
     ## Fills the Board.allowed table with strings, representing allowed letters from the hand
     def updateAllowed(self, hand):
         self.hand = hand
@@ -111,6 +114,7 @@ class Board(object):
                         if self.isValidPlacement(tile):
                             self.allowed[row_num][column_num] += tile.letter
 
+    ## Calls the getLeftRow function to update self.lefts
     def updateLefts(self):
         for i in range(self.size):
             self.lefts[i] = self.getLeftRow(i)
@@ -126,17 +130,18 @@ class Board(object):
         for columnIndex in range(1, self.size):
             if row[columnIndex].isAnchor:
                 if not(row[columnIndex-1].isEmpty()) and not(row[columnIndex-1].isAnchor):
-                    prev = row[columnIndex-1].letter
+                    prev = [row[columnIndex-1]]
+                    # prev = row[columnIndex-1].letter
                     for j in range(columnIndex-2, -1, -1):
                         if row[j].isEmpty():
                             break
-                        prev = row[j].letter + prev
+                        prev.insert(0, row[j])
 
                     lefts[columnIndex] = [Move(prev)]
                 else:
                     leftsFromHand = self.getLeftFromHand(row, columnIndex)
-                    lefts[columnIndex] = [Move(getLetters(tiles),tiles) for tiles in leftsFromHand]
-                    lefts[columnIndex].append(Move("", []))
+                    lefts[columnIndex] = [Move(deepcopy(tiles),tiles) for tiles in leftsFromHand]
+                    lefts[columnIndex].append(Move([], []))
         return lefts
 
     ## Gets all the left parts using the letters in your hand
@@ -147,8 +152,9 @@ class Board(object):
         for i in range(anchorPoint-1, -1, -1):
             if not(row[i].isEmpty()) or row[i].isAnchor:
                 break
-            elif (wordLen in combos) and combos[wordLen] is not None:
-                allowedLetters.extend(combos[wordLen])
+            lefts = combos.get(wordLen, None)
+            if lefts is not None:
+                allowedLetters.extend(lefts)
             wordLen += 1
         return allowedLetters
 
@@ -253,9 +259,16 @@ class Board(object):
         row = self.board[rowIndex]
         allWords = []
         trimmedAllowed = [list(x) for x in rowAllowed]
-
-        left = leftPart.word
+        left = getLetters(leftPart.word)
+        length = len(left)
         fromHand = getLetters(leftPart.tiles)
+        if leftPart.tiles is not None:
+            for index, tile in enumerate(leftPart.tiles):
+                if tile.posn is not None:
+                    nt = deepcopy(tile)
+                    nt.posn.x = rowIndex
+                    nt.posn.y = currentIndex - (length - index -2)
+                    leftPart.tiles[index] = nt
 
         # Removes letters that have already been used from the allowed letters
         if fromHand is not None:
@@ -265,7 +278,7 @@ class Board(object):
 
         # If you're at an endpoint, check your previous, unless this 
         if (not firstRun) and self.isEndPoint(currentIndex, rowIndex) and isWord(left):
-            allWords.append(left)
+            allWords.append(leftPart)
 
         # Stop when you've reached the end of the row
         if currentIndex >= self.size:
@@ -274,18 +287,18 @@ class Board(object):
         # If there's a letter, add it and keep going
         elif not(row[currentIndex].isEmpty()):
             lp = deepcopy(leftPart)
-            lp.word = left+row[currentIndex].letter
+            lp.word.append(row[currentIndex])
             allWords.extend(self.extendRight(lp, rowIndex, currentIndex+1))
 
         # If there are allowed letters, add each one
         elif len(trimmedAllowed[currentIndex]):
             for letter in trimmedAllowed[currentIndex]:
                 lp = deepcopy(leftPart)
-                lp.word = left+letter
+                lp.word.append(Tile(letter=letter))
                 if fromHand is not None:
                     lp.tiles.append(Tile(letter=letter))
                 else:
-                    lp.tiles = [Tile(letter=letter)]
+                    lp.tiles = [Tile(letter=letter, posn=Posn(rowIndex, currentIndex))]
                 allWords.extend(self.extendRight(lp, rowIndex, currentIndex+1))
 
         return allWords if allWords is not [] else None
@@ -331,7 +344,16 @@ class Hand(object):
     
     def getPermutations(self):
         combosDict = dict.fromkeys(range(1,self.size+1))
-        for i in range(1,self.size+1): 
+        for i in range(1,self.size+1):
+            # toAppend = []
+            # for perm in itertools.permutations(self.tiles, i):
+            #     perm = list(perm)
+            #     # for ind, tile in enumerate(perm):
+            #     #     nt = deepcopy(tile)
+            #     #     nt.posn = Posn(0, -1*ind)
+            #     #     perm[ind] = nt
+            #     toAppend.append(perm)
+            # combosDict[i] = toAppend
             combosDict[i] = [list(x) for x in itertools.permutations(self.tiles, i)]
         return combosDict
 
