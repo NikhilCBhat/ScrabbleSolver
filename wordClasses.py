@@ -64,6 +64,9 @@ class Tile(object):
 
     def isEmpty(self):
         return self.letter == "-"
+    
+    def __eq__(self, otherTile):
+        return self.letter == otherTile.letter
 
     def __repr__(self):
         return self.letter
