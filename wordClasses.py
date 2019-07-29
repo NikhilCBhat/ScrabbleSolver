@@ -2,33 +2,29 @@ import itertools
 from wordUtils import wordMultiplier, letterMultiplier, pointsList
 
 class Move(object):
-    def __init__(self, word=[], board=None, scoreMove=False):
+    def __init__(self, word=[]):
         self.word = word
-        self.board = board
-        self.score = self.getScore() if scoreMove else 0
+        self.score = 0
 
-    def getScore(self, score=0):
+    def getScore(self, board):
 
         scorableLetters = [x for x in self.word if not(x.onBoard)]
-        # print(scorableLetters)
-
         finalMultiplier = 1
 
         for tile in scorableLetters:
             for direction in [-1,1]:
-                for dTile in self.board.getVertical(tile, direction):
-                    score += dTile.points
+                for dTile in board.getVertical(tile, direction):
+                    self.score += dTile.points
             if tile.posn is not None:
-                self.board.board[tile.posn.x][tile.posn.y] = tile
-                finalMultiplier *= wordMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)
-                score += tile.points * (letterMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)-1)
+                board.board[tile.posn.x][tile.posn.y] = tile
+                finalMultiplier *= wordMultiplier.get(board.modifiers[tile.posn.x][tile.posn.y], 1)
+                self.score += tile.points * (letterMultiplier.get(board.modifiers[tile.posn.x][tile.posn.y], 1)-1)
 
-        score += tile.points*finalMultiplier
-        for lTile in self.board.getLeft(tile):
-            score += lTile.points*finalMultiplier
-        for lTile in self.board.getRight(tile):
-            score += lTile.points*finalMultiplier
-        return score
+        self.score += tile.points*finalMultiplier
+        for lTile in board.getLeft(tile):
+            self.score += lTile.points*finalMultiplier
+        for lTile in board.getRight(tile):
+            self.score += lTile.points*finalMultiplier
 
     def __gt__(self, move2):
         return self.score > move2.score
