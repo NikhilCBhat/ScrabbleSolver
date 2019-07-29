@@ -34,7 +34,7 @@ class Move(object):
     def getScore(self, score=0):
 
         scorableLetters = [x for x in self.word if not(x.onBoard)]
-        print(scorableLetters)
+        # print(scorableLetters)
 
         finalMultiplier = 1
 
@@ -42,9 +42,10 @@ class Move(object):
             for direction in [-1,1]:
                 for dTile in self.board.getVertical(tile, direction):
                     score += dTile.points
-            self.board.board[tile.posn.x][tile.posn.y] = tile
-            finalMultiplier *= wordMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)
-            score += tile.points * (letterMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)-1)
+            if tile.posn is not None:
+                self.board.board[tile.posn.x][tile.posn.y] = tile
+                finalMultiplier *= wordMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)
+                score += tile.points * (letterMultiplier.get(self.board.modifiers[tile.posn.x][tile.posn.y], 1)-1)
 
         score += tile.points*finalMultiplier
         for lTile in self.board.getLeft(tile):
@@ -191,6 +192,8 @@ class Board(object):
     ## Gets adjacent tiles in the vertical direction 
     # Direction 1 --> Down, -1 Up 
     def getVertical(self, tile, direction):
+        if tile.posn is None:
+            return []
         adjacent = []
         row_num, column_num = tile.posn.x, tile.posn.y
 
@@ -242,11 +245,12 @@ class Board(object):
             for listOfMoves in self.moves[rowNumber]:
                 for move in listOfMoves:
                     for position, tile in enumerate(move.word):
-                        if tile.onBoard:
+                        if tile.onBoard and tile.posn is not None:
                             rn, cn = tile.posn.x, tile.posn.y
                             for index, tile in enumerate(move.word):
                                 tile.posn = Posn(rn, index + cn - position)
                             break
+                    move.board = deepcopy(self)
 
     ## Get the possible moves for a row
     def getRowMoves(self, rowIndex):
@@ -308,6 +312,18 @@ class Board(object):
     ## Determines whether a given index is the end of a row
     def isEndPoint(self, index, rowInd):
         return (index >= self.size) or self.board[rowInd][index].isEmpty() or not(len(self.allowed[rowInd][index]))
+
+def getBestMove(b):
+    bestMove = None
+    
+    for row in b.moves:
+        for listOfMoves in row:
+            for move in listOfMoves:
+                move.score = move.getScore()
+                if bestMove is None or move > bestMove:
+                    bestMove = move
+    
+    return bestMove
 
 def makeBoard(letters):
     b = []
