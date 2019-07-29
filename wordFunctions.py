@@ -1,6 +1,23 @@
 import time
 from wordUtils import safeRemove, isWord, getPermutations, makeBlankBoard, isEndPoint, isAnchor, isValidPlacement
-from wordClasses import move
+
+class LeftPart(object):
+    def __init__(self, word=None, fromHand=None):
+        self.word = word
+        self.fromHand = fromHand
+
+    def __str__(self):
+        w = "None" if self.word is None else self.word
+        fh = "None" if self.fromHand is None else self.fromHand
+        return "%s / %s"%(w, fh)
+
+    def __repr__(self):
+        w = "None" if self.word is None else self.word
+        fh = "None" if self.fromHand is None else self.fromHand
+        return "MO: %s/%s"%(w, fh)
+
+    def __eq__(self, value):
+        return self.word == value.word and self.fromHand == value.fromHand
 
 ## Gets all posibble moves on the board
 def getAllMoves(board, hand):
@@ -33,7 +50,6 @@ def getAnchors(board):
 ## List-of [List-of Strings], List-of Strings -> List-of [List-of Strings]
 def getValidLetters(board, hand):
     allAllowed = makeBlankBoard(len(board))
-
     for row_num, row in enumerate(board):
         for column_num, _ in enumerate(row):
             if board[row_num][column_num] == '-':
@@ -116,11 +132,11 @@ def getLeftRow(row, rowAnchors, rowAllowed, hand):
                         break
                     prev = row[j] + prev
 
-                lefts[i] = [move(prev)]
+                lefts[i] = [LeftPart(prev)]
             else:
                 leftsFromHand = getLeftFromHand(row, i, rowAnchors, rowAllowed, hand)
-                lefts[i] = [move(x,x) for x in leftsFromHand]
-                lefts[i].append(move(""))
+                lefts[i] = [LeftPart(x,x) for x in leftsFromHand]
+                lefts[i].append(LeftPart(""))
     return lefts
 
 ## Gets all the left parts using the letters in your hand
