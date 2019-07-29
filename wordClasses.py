@@ -63,23 +63,20 @@ class Move(object):
         return ''.join([tile.letter for tile in self.word])
 
 class Board(object):
-    def __init__(self, board=None, size=None, hand=None):
+    def __init__(self, letters ,hand=None):
         self.modifiers = MODIFIERS.copy()
-        self.board = board
+
+        self.board = []
+        for i,row in enumerate(letters):
+            boardRow = []
+            for j,char in enumerate(row):
+                boardRow.append(Tile(Posn(i, j), char, onBoard=True))
+            self.board.append(boardRow)
+
         self.allowed = []
         self.lefts = []
         self.moves = []
-        self.size = size
-
-        if self.board is None:
-            self.board = []
-            for i in range(self.size):
-                board_row = []
-                for j in range(self.size):
-                    board_row.append(Tile(posn=Posn(i,j), onBoard=True))
-                self.board.append(board_row)
-        else:
-            self.size = len(board)
+        self.size = len(letters)
         self.updateAnchors()
 
         for _ in range(self.size):
@@ -319,15 +316,6 @@ def getBestMove(b):
                     bestMove = move
     
     return bestMove
-
-def makeBoard(letters):
-    b = []
-    for i,row in enumerate(letters):
-        boardRow = []
-        for j,char in enumerate(row):
-            boardRow.append(Tile(Posn(i, j), char, onBoard=True))
-        b.append(boardRow)
-    return Board(b)          
 
 class Tile(object):
     def __init__(self, posn=None, letter="-", isAnchor=False, onBoard=False):
