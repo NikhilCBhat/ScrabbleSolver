@@ -10,7 +10,7 @@ board =         [['-', '-', '-', '-', '-', '-', '-', '-', 'J', 'O', '-', 'T', '-
                 ['-', '-', '-', '-', '-', '-', '-', '-', '-', 'D', 'R', 'O', 'N', 'E', '-'],
                 ['-', '-', '-', '-', '-', '-', '-', '-', 'H', '-', '-', 'Y', '-', 'Y', 'O'],
                 ['-', '-', '-', '-', '-', '-', '-', 'M', 'E', '-', '-', 'O', 'P', 'E', 'N'],
-                ['-', '-', '-', '-', '-', '-', 'Q', '-', 'S', '-', '-', '-', 'R', '-', '-'],
+                ['-', '-', '-', '-', '-', '-', 'Q', 'I', 'S', '-', '-', '-', 'R', '-', '-'],
                 ['-', '-', '-', '-', '-', '-', '-', 'K', '-', '-', '-', '-', 'O', 'H', '-'],
                 ['-', '-', '-', '-', '-', '-', '-', 'E', '-', '-', '-', '-', 'B', 'A', 'D'],
                 ['-', '-', '-', '-', '-', '-', '-', 'D', 'U', 'V', 'E', 'T', 'S', '-', 'A'], 
@@ -25,15 +25,14 @@ board =         [['-', '-', '-', '-', '-', '-', '-', '-', 'J', 'O', '-', 'T', '-
 hand = ['N', 'C', 'E', 'S', 'R', 'O', 'Q']
 
 if __name__ == "__main__":
-    b = Board(board, Hand(hand))
 
-    print("Your current board is: ")
-    b.printBoard()
+    print("This is the current board: ")
+    for row in board:
+        print(row)
+    print("You current letters are: ", hand)
 
-    print("Your letters are: ", hand)
-
-    bestMove = getBestMove(b)
+    bestMove = getBestMove(board, hand)
     print("\nThe best word you can make is %s to earn %s points"%(bestMove, bestMove.score))
 
     print("Here's how the board should look after your move: ")
-    bestMove.displayMove(b)
+    bestMove.displayMove(board)
