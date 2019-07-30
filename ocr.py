@@ -37,6 +37,8 @@ def getPlayerLetters(screenshot, display=False):
 
     return list(pytesseract.image_to_string(screenshot))
 
+## Image, X/Y Coordinates --> String
+## Gets the letter in a tile
 def getSquare(img, x, y, display=False, squareSize = 75, hOffset = 740):
     oGsquare = img[hOffset+x*squareSize:hOffset+(x+1)*squareSize, squareSize*y:squareSize*(y+1)]
     square = cv2.cvtColor(oGsquare, cv2.COLOR_BGR2GRAY)
@@ -52,21 +54,15 @@ def getSquare(img, x, y, display=False, squareSize = 75, hOffset = 740):
 
     return str(data.most_common(1)[0][0]) if len(letters) else "-"
 
-def getBoardLetters(filePath, boardLength=15, display=False):
+## String -> [List-of [List-of Strings]]
+## Converts an image to a list of letters
+def getBoardLetters(filePath, boardLength=15):
     img = cv2.imread(filePath)
     board = makeBlankBoard(boardLength)
     opposite = cv2.bitwise_not(img)
-    if display:
-        print("~~~Gameboard~~~ \n")
+
     for i in range(boardLength):
-        line = ""
         for j in range(boardLength):
             board[i][j] = getSquare(opposite, i, j)
-            if display:
-                line += getSquare(opposite, i, j)
-        if display:
-            print(line)
-    if display:
-        yourletters = getPlayerLetters(img)
-        print("\nYour letters are %s."%''.join(yourletters))
+
     return board
