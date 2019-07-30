@@ -28,11 +28,16 @@ class Move(object):
         self.score += wordPoints * finalMultiplier
         return self.score
 
-    def displayMove(self, board):
+    def displayMoveBoard(self, board):
         for tile in self.word:
             board.board[tile.posn.x][tile.posn.y] = tile
-
         board.printBoard()
+
+    def displayMove(self, board):
+        for tile in self.word:
+            board[tile.posn.x][tile.posn.y] = tile
+        for row in board:
+            print(row)
 
     def __gt__(self, move2):
         return self.score > move2.score
