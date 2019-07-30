@@ -1,26 +1,23 @@
 # Scrabble Solver
-_Currently a work in progress._
 
 ### About
-A scrabble solver, which reads the current game board and produces the highest scoring move.
+A scrabble solver, which reads the current game board using OCR and produces the highest scoring move.
 
 ### Try it Yourself!
 
-#### Without an image:
 1. Open the `/examples/` folder.
-2. Edit the gameboard, and hand if you'd like. 
-3. Run the `withoutOCR_example` script using your IDE of choice, or from terminal with `python3 withoutOCR_example.py --gametype <choose either scrabble or wwf>`. 
+2. Run the example script using your IDE of choice, or from terminal with `python3 example.py --gametype <choose either scrabble or wwf> --file <path to image>`. If you don't have an image, simply omit that argument and the program will use the array with letters that is in the example file. There is also a sample image in the directory, if you'd like to try out the OCR.
 
-Here's how it should look:
-![Without OCR](https://raw.githubusercontent.com/NikhilCBhat/ScrabbleSolver/master/examples/Without_OCR_Example.png)
+Here's how it should look after running the example:
+![Image](https://raw.githubusercontent.com/NikhilCBhat/ScrabbleSolver/master/examples/Without_OCR_Example.png)
 
 ### How it Works
 
 #### Reading the Board
-1) OpenCV is used to apply several filters to the input image in to make it as clean as possible.
-2) Then each tile from the game board is split, and duplicated in a row 10x.
-3) Pytesseract is then used to read the letters, and the most common letter in the 10 is selected.
-4) The output from the OCR is stored as a Board object.
+1) OpenCV is used to apply several filters to the input image in to make it as machine-readable as possible.
+2) Then each tile from the game board is split, and duplicated 10x in a row.
+3) Pytesseract is then used to read the letters, and the most common letter from the 10 is selected.
+4) The output from the OCR is stored as a list of letters which is used to create a Board object.
 
 #### Calculating the Best Move
 Generating all of the move is a 4 step process. Initial inspiration, along with the idea of reducing the move generation to a 1-Dimensional problem is taken from a publication by Appel & Jacobson, which is cited below.
