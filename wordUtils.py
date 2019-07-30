@@ -54,3 +54,19 @@ def getLetters(tiles):
 ## [List-of Lists] --> [List-of Lists]
 def transpose(board):
     return list(map(list, zip(*board)))
+
+## Allows a player to edit the letters on the board
+## [List-of Lists] --> [List-of Lists]
+def editBoardLetters(board):
+    needsEdit = "y"
+    while needsEdit == "y":
+        print("This is the current board:")
+        for index,row in enumerate(board):
+            print(index, row)
+        print([str(x) for x in range(index+1)])
+        needsEdit = input("\nIs there anything incorrect on the board? (y/n) ")
+        if needsEdit == "y":
+            edit = input("Enter the row, column, and the correct letter: (row,column,letter) ")
+            r, c, l = edit.split(",")
+            board[int(r)][int(c)] = l.upper()
+    return board
