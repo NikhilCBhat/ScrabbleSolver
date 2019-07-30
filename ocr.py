@@ -22,7 +22,8 @@ def resize(img, scale=0.2):
 
 ## Image --> List-of Letters
 ## Gets the letters the player has
-def getPlayerLetters(screenshot, display=False):
+def getPlayerLetters(filePath, display=False):
+    screenshot = cv2.imread(filePath)
     height, width, _ = screenshot.shape
     screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
     screenshot = cv2.threshold(screenshot[int(3*height/4):height, 0:width], 50, 255, cv2.THRESH_BINARY_INV)[1]
@@ -43,7 +44,6 @@ def getSquare(img, x, y, display=False, squareSize = 75, hOffset = 740):
     oGsquare = img[hOffset+x*squareSize:hOffset+(x+1)*squareSize, squareSize*y:squareSize*(y+1)]
     square = cv2.cvtColor(oGsquare, cv2.COLOR_BGR2GRAY)
     square = cv2.threshold(square, 190, 255, cv2.THRESH_BINARY_INV)[1]
-    # square = cv2.GaussianBlur(square,(1,1),0)
     square = np.tile(square, 15)
     letters = pytesseract.image_to_string(square)
     data = Counter(letters)
@@ -63,6 +63,6 @@ def getBoardLetters(filePath, boardLength=15):
 
     for i in range(boardLength):
         for j in range(boardLength):
-            board[i][j] = getSquare(opposite, i, j)
+            board[i][j] = getSquare(opposite, i, j).upper()
 
     return board
