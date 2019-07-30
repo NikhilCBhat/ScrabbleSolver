@@ -6,10 +6,12 @@ sys.path.append(parent)
 import argparse
 parser = argparse.ArgumentParser(description='--gametype for scrabble/wwf')
 parser.add_argument('--gametype', help="Choose the gametype")
+parser.add_argument('--file', help="Input the file location")
 args = parser.parse_args()
 
 from board import Board, getBestMove
-from wordClasses import Hand
+from ocr import getBoardLetters, getPlayerLetters
+from wordUtils import editBoardLetters, editHandLetters
 
 board =         [['-', '-', '-', '-', '-', '-', '-', '-', 'J', 'O', '-', 'T', '-', '-', '-'], 
                 ['-', '-', '-', '-', '-', '-', '-', '-', '-', 'D', 'R', 'O', 'N', 'E', '-'],
@@ -30,6 +32,13 @@ board =         [['-', '-', '-', '-', '-', '-', '-', '-', 'J', 'O', '-', 'T', '-
 hand = ['N', 'C', 'E', 'S', 'R', 'O', 'Q']
 
 if __name__ == "__main__":
+
+    if args.file is not None:
+        board = getBoardLetters(args.file)
+        board = editBoardLetters(board)
+
+        hand = getPlayerLetters(args.file)
+        hand = editHandLetters(hand)
 
     print("This is the current board: ")
     for row in board:
