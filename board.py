@@ -1,6 +1,5 @@
-
 from copy import deepcopy
-from wordUtils import isWord, safeRemove, getLetters, MODIFIERS
+from wordUtils import isWord, safeRemove, getLetters, MODIFIERS, transpose
 from wordClasses import Tile, Posn, Hand, Move
 
 class Board(object):
@@ -242,7 +241,7 @@ class Board(object):
     def isEndPoint(self, index, rowInd):
         return (index >= self.size) or self.board[rowInd][index].isEmpty() or not(len(self.allowed[rowInd][index]))
 
-def getBestMove(b):
+def getBestMoveBoard(b):
     bestMove = None
 
     for row in b.moves:
@@ -252,3 +251,16 @@ def getBestMove(b):
                 if bestMove is None or move > bestMove:
                     bestMove = move
     return bestMove
+
+def getBestMove(letters, hand):
+
+    h = Hand(hand)
+    b1 = Board(letters, h)
+    bm = getBestMoveBoard(b1)
+    b2 = Board(transpose(letters), h)
+    bm2 = getBestMoveBoard(b2)
+
+    for tile in bm2:
+        tile.posn.x, tile.posn.y = tile.posn.y, tile.posn.x
+
+    return max(bm, bm2)
