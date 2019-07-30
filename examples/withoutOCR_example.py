@@ -3,6 +3,11 @@ import sys
 parent = os.path.dirname(os.getcwd())
 sys.path.append(parent)
 
+import argparse
+parser = argparse.ArgumentParser(description='--gametype for scrabble/wwf')
+parser.add_argument('--gametype', help="Choose the gametype")
+args = parser.parse_args()
+
 from board import Board, getBestMove
 from wordClasses import Hand
 
@@ -31,7 +36,7 @@ if __name__ == "__main__":
         print(row)
     print("You current letters are: ", hand)
 
-    bestMove = getBestMove(board, hand)
+    bestMove = getBestMove(board, hand, args.gametype)
     print("\nThe best word you can make is %s to earn %s points"%(bestMove, bestMove.score))
 
     print("Here's how the board should look after your move: ")
