@@ -90,3 +90,14 @@ def editBoardLetters(board):
             r, c, l = edit.split(",")
             board[int(r)][int(c)] = l.upper()
     return board
+
+def editHandLetters(hand):
+    needsEdit = "y"
+    while needsEdit == "y":
+        print("These are the current letters:\n", hand)
+        needsEdit = input("\nIs there anything incorrect on the hand? (y/n) ")
+        
+        if needsEdit == "y":
+            edit = input("Enter the correct letters: ")
+            hand = edit.split('')
+    return hand
