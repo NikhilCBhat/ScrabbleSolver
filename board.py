@@ -1,4 +1,3 @@
-from copy import deepcopy
 from wordUtils import isWord, safeRemove, getLetters, MODIFIERS, transpose
 from wordClasses import Tile, Posn, Hand, Move
 
@@ -231,7 +230,7 @@ class Board(object):
         # If there are allowed letters, add each one
         elif len(rowAllowed[currentIndex]):
             for tile in rowAllowed[currentIndex]:
-                lp = deepcopy(leftPart)
+                lp = Move([Tile(x.posn, x.letter, x.isAnchor, x.onBoard) for x in leftPart.word])
                 lp.word.append(tile)
                 allWords.extend(self.extendRight(lp, rowIndex, currentIndex+1))
 
