@@ -5,9 +5,15 @@ import numpy as np
 import time
 from collections import Counter
 import threading
-from wordFunctions import makeBlankBoard
 
-BOARD_LENGTH = 15
+## Makes a list of n lists where each sublist is of length n 
+## Int -> List-of [List-of Strings]
+def makeBlankBoard(length):
+    board = []
+    for _ in range(length):
+        row = ['-']*length
+        board.append(row)
+    return board
 
 ## Image --> Image
 ## Resizes an image
@@ -31,9 +37,7 @@ def getPlayerLetters(screenshot, display=False):
 
     return list(pytesseract.image_to_string(screenshot))
 
-squareSize = 75
-hOffset = 740
-def getSquare(img, x, y, display=False):
+def getSquare(img, x, y, display=False, squareSize = 75, hOffset = 740):
     oGsquare = img[hOffset+x*squareSize:hOffset+(x+1)*squareSize, squareSize*y:squareSize*(y+1)]
     square = cv2.cvtColor(oGsquare, cv2.COLOR_BGR2GRAY)
     square = cv2.threshold(square, 190, 255, cv2.THRESH_BINARY_INV)[1]
@@ -48,15 +52,15 @@ def getSquare(img, x, y, display=False):
 
     return str(data.most_common(1)[0][0]) if len(letters) else "-"
 
-def getBoardLetters(filePath, display=False):
+def getBoardLetters(filePath, boardLength=15, display=False):
     img = cv2.imread(filePath)
-    board = makeBlankBoard(BOARD_LENGTH)
+    board = makeBlankBoard(boardLength)
     opposite = cv2.bitwise_not(img)
     if display:
         print("~~~Gameboard~~~ \n")
-    for i in range(BOARD_LENGTH):
+    for i in range(boardLength):
         line = ""
-        for j in range(BOARD_LENGTH):
+        for j in range(boardLength):
             board[i][j] = getSquare(opposite, i, j)
             if display:
                 line += getSquare(opposite, i, j)
@@ -66,17 +70,3 @@ def getBoardLetters(filePath, display=False):
         yourletters = getPlayerLetters(img)
         print("\nYour letters are %s."%''.join(yourletters))
     return board
-
-if __name__ == '__main__':
-    fp = '/home/nikhil/Documents/Projects/ScrabbleSolver/pics/scrabbleGame.jpg'
-    fp2 = '/home/nikhil/Documents/Projects/ScrabbleSolver/pics/lateGame.PNG'
-    img = cv2.imread(fp)
-    getBoardLetters(fp, True)
-
-
-
-    # print(getPlayerLetters(img))
-    # getSquare(img, 0,9)
-    # getBoardLetters('/home/nikhil/Documents/Projects/ScrabbleSolver/pics/lateGame.PNG')
-    # returnLetters(fp)
-    # print(getBoardLetters(fp))
