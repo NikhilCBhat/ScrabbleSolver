@@ -9,7 +9,7 @@ A scrabble solver, which reads the current game board and produces the highest s
 #### Without an image:
 1. Open the `/examples/` folder.
 2. Edit the gameboard, and hand if you'd like. 
-3. Run the `withoutOCR_example` script using your IDE of choice, or from terminal with `python3 withoutOCR_example.py`. 
+3. Run the `withoutOCR_example` script using your IDE of choice, or from terminal with `python3 withoutOCR_example.py --gametype <choose either scrabble or wwf>`. 
 
 Here's how it should look:
 ![Without OCR](https://raw.githubusercontent.com/NikhilCBhat/ScrabbleSolver/master/examples/Without_OCR_Example.png)
