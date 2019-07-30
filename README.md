@@ -12,7 +12,7 @@ A scrabble solver, which reads the current game board and produces the highest s
 3. Run the `withoutOCR_example` script using your IDE of choice, or from terminal with `python3 withoutOCR_example.py --gametype <choose either scrabble or wwf>`. 
 
 Here's how it should look:
-![Without OCR](https://raw.githubusercontent.com/NikhilCBhat/ScrabbleSolver/master/examples/Without_OCR_Example.png)
+![Without OCR](https://raw.githubusercontent.com/NikhilCBhat/ScrabbleSolver/master/examples/exampleOutput.png)
 
 ### How it Works
 
