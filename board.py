@@ -1,9 +1,8 @@
-from wordUtils import isWord, safeRemove, getLetters, MODIFIERS, transpose
+from wordUtils import isWord, safeRemove, getLetters, WWF_MODIFIERS, transpose, SCRABBLE_MODIFIERS
 from wordClasses import Tile, Posn, Hand, Move
 
 class Board(object):
     def __init__(self, letters, hand=None):
-        self.modifiers = MODIFIERS
 
         self.board = []
         for i,row in enumerate(letters):
@@ -240,24 +239,24 @@ class Board(object):
     def isEndPoint(self, index, rowInd):
         return (index >= self.size) or self.board[rowInd][index].isEmpty() or not(len(self.allowed[rowInd][index]))
 
-def getBestMoveBoard(b):
+def getBestMoveBoard(b, gameType):
     bestMove = None
 
     for row in b.moves:
         for listOfMoves in row:
             for move in listOfMoves:
-                move.getScore(b)
+                move.getScore(b, gameType)
                 if bestMove is None or move > bestMove:
                     bestMove = move
     return bestMove
 
-def getBestMove(letters, hand):
+def getBestMove(letters, hand, gameType):
 
     h = Hand(hand)
     b1 = Board(letters, h)
-    bm = getBestMoveBoard(b1)
+    bm = getBestMoveBoard(b1, gameType)
     b2 = Board(transpose(letters), h)
-    bm2 = getBestMoveBoard(b2)
+    bm2 = getBestMoveBoard(b2, gameType)
 
     for tile in bm2:
         tile.posn.x, tile.posn.y = tile.posn.y, tile.posn.x

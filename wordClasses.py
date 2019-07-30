@@ -1,5 +1,5 @@
 import itertools
-from wordUtils import wordMultiplier, letterMultiplier, pointsList
+from wordUtils import wordMultiplier, letterMultiplier, SCRABBLE_MODIFIERS, WWF_MODIFIERS, SCRABBLE_pointsList, WWF_pointsList
 
 class Move(object):
     def __init__(self, word=[]):
@@ -7,7 +7,14 @@ class Move(object):
         self.score = 0
         self.index = 0
 
-    def getScore(self, board):
+    def getScore(self, board, gameType):
+
+        if gameType == "scrabble":
+            modifiers = SCRABBLE_MODIFIERS
+            pointsList = SCRABBLE_pointsList
+        else:
+            modifiers = WWF_MODIFIERS
+            pointsList = WWF_pointsList
 
         finalMultiplier = 1
         wordPoints = 0
@@ -17,13 +24,13 @@ class Move(object):
             tileMultiplier = 1
 
             if not(tile.onBoard):
-                tileMultiplier = letterMultiplier.get(board.modifiers[tile.posn.x][tile.posn.y], 1)
-                finalMultiplier *= wordMultiplier.get(board.modifiers[tile.posn.x][tile.posn.y], 1)
+                tileMultiplier = letterMultiplier.get(modifiers[tile.posn.x][tile.posn.y], 1)
+                finalMultiplier *= wordMultiplier.get(modifiers[tile.posn.x][tile.posn.y], 1)
                 for direction in [-1,1]:
                     for dTile in board.getVertical(tile, direction):
-                        self.score += dTile.points
+                        self.score += pointsList[dTile.letter]
             
-            wordPoints += tile.points * tileMultiplier
+            wordPoints += pointsList[tile.letter] * tileMultiplier
 
         self.score += wordPoints * finalMultiplier
         return self.score
@@ -62,7 +69,6 @@ class Move(object):
 class Tile(object):
     def __init__(self, posn=None, letter="-", isAnchor=False, onBoard=False):
         self.letter = letter
-        self.points = pointsList[self.letter]
         self.posn = posn
         self.isAnchor = isAnchor
         self.onBoard = onBoard
